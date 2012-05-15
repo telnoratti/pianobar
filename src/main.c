@@ -208,9 +208,6 @@ static void BarMainStartPlayback (BarApp_t *app, pthread_t *playerThread) {
 		app->player.settings = &app->settings;
 
 		/* throw event */
-		BarUiStartEventCmd (&app->settings, "songstart",
-				app->curStation, app->playlist, &app->player, app->ph.stations,
-				PIANO_RET_OK, WAITRESS_RET_OK);
 
 		/* prevent race condition, mode must _not_ be FREED if
 		 * thread has been started */
@@ -218,6 +215,11 @@ static void BarMainStartPlayback (BarApp_t *app, pthread_t *playerThread) {
 		/* start player */
 		pthread_create (playerThread, NULL, BarPlayerThread,
 				&app->player);
+                while (app->player.mode != PLAYER_SAMPLESIZE_INITIALIZED) pthread_yield();
+
+		BarUiStartEventCmd (&app->settings, "songstart",
+				app->curStation, app->playlist, &app->player, app->ph.stations,
+				PIANO_RET_OK, WAITRESS_RET_OK);
 	}
 }
 
